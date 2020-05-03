@@ -3,7 +3,7 @@ const log = console.log.bind(console)
 const prettyLog = (node, indent = '', marker = '', isLastChild = true, isRoot = true) => {
     let message = `${indent}${marker}${node.kind}`
     if (node && node.value) {
-        message += `${node.value}`
+        message += ` ${node.value}`
     }
     log(message)
 

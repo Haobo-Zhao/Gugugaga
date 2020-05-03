@@ -42,17 +42,26 @@ class BinaryExpressionSyntax extends ExpressionSyntax {
     }
 }
 
+class SyntaxTree {
+    constructor(diagnostics, rootExpression, endOfFileToken) {
+        this.diagnostics = diagnostics
+        this.rootExpression = rootExpression
+        this.endOfFileToken = endOfFileToken
+    }
+}
+
 class Parser {
     constructor(text) {
         this.tokens = []
         this.position = 0
+        this.diagnostics = []
         this.lexer = new Lexer(text)
 
         // get all tokens at once
         // compiler books in the 80's usually consume one token at a time for better performance
         // but time's changed ;)
 
-        // this.tokens will always have at least 1 element, kind SyntaxKind.EndOfFile
+        // this.tokens will always have at least 1 element, kind SyntaxKind.endOfFile
         let token;
         do {
             token = this.lexer.nextToken()
@@ -60,12 +69,25 @@ class Parser {
             if (token.kind != SyntaxKind.whitespace && token.kind != SyntaxKind.badToken) {
                 this.tokens.push(token)
             }
-        } while (token.kind != SyntaxKind.EndOfFile)
-        // log('all tokens', this.tokens)
+        } while (token.kind != SyntaxKind.endOfFile)
+
+        this.diagnostics = this.diagnostics.concat(this.lexer.diagnostics)
     }
 
     parse() {
+        // this.tokens.forEach(token => {
+        //     log(`token ${token.kind} '${token.text}' (${token.value})`)
+        // });
+
+        const expression = this.parseExpression()
+        const endOfFileToken = this.match(SyntaxKind.endOfFile)
+
+        return new SyntaxTree(this.diagnostics, expression, endOfFileToken)
+    }
+
+    parseExpression() {
         let left = this.ParsePrimaryExpression()
+
         while (
             this.currentToken().kind == SyntaxKind.plus
             || this.currentToken().kind == SyntaxKind.minus
@@ -78,6 +100,7 @@ class Parser {
 
             left = new BinaryExpressionSyntax(left, operatorToken, right)
         }
+
         return left
     }
 
@@ -94,6 +117,9 @@ class Parser {
             this.increasePosition()
             return currentToken
         } else {
+            const errorMessage = `ERROR: was expecting a <${kind}> token, but got a <${currentToken.kind}> token`
+            this.diagnostics.push(errorMessage)
+
             return new SyntaxToken(kind, currentToken.position, null, null)
         }
     }

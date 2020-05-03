@@ -36,7 +36,7 @@ const SyntaxKind = {
     closingParenthesis: 'closingParenthesis',
 
     badToken: 'badToken',
-    EndOfFile: 'EndOfFile',
+    endOfFile: 'endOfFile',
 
     numberExpression: 'numberExpression',
     binaryExpression: 'binaryExpression',
@@ -46,6 +46,7 @@ class Lexer {
     constructor(text) {
         this.text = text
         this.position = 0
+        this.diagnostics = []
     }
 
     currentChar() {
@@ -68,7 +69,7 @@ class Lexer {
         // whlitespace
 
         if (this.position >= this.text.length) {
-            return new SyntaxToken(SyntaxKind.EndOfFile, this.position, '\0', null)
+            return new SyntaxToken(SyntaxKind.endOfFile, this.position, '\0', null)
         }
 
         const char = this.currentChar()
@@ -106,7 +107,22 @@ class Lexer {
                 return new SyntaxToken(SyntaxKind.multiplication, this.position, char, null)
             } else if (char == '/') {
                 return new SyntaxToken(SyntaxKind.division, this.position, char, null)
+            } else if (char == '(') {
+                return new SyntaxToken(SyntaxKind.openParenthesis, this.position, char, null)
+            } else if (char == ')') {
+                return new SyntaxToken(SyntaxKind.closingParenthesis, this.position, char, null)
             }
         }
+
+        const errorMessage = `ERROR: bad character: ${this.currentChar()}`
+        this.diagnostics.push(errorMessage)
+
+        const badToekn = new SyntaxToken(
+            SyntaxKind.badToken,
+            this.position,
+            this.text.slice(this.position, this.position + 1, null)
+        )
+        this.increasePosition()
+        return badToekn
     }
 }
