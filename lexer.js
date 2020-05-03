@@ -1,9 +1,25 @@
-class SyntaxToken {
+class SyntaxNode {
+    constructor() {
+
+    }
+
+    getChildren() {
+
+    }
+}
+
+class SyntaxToken extends SyntaxNode {
     constructor(kind, position, text, value) {
+        super()
+
         this.kind = kind
         this.position = position
         this.text = text
         this.value = value
+    }
+
+    getChildren() {
+        return []
     }
 }
 
@@ -21,6 +37,9 @@ const SyntaxKind = {
 
     badToken: 'badToken',
     EndOfFile: 'EndOfFile',
+
+    numberExpression: 'numberExpression',
+    binaryExpression: 'binaryExpression',
 }
 
 class Lexer {
