@@ -84,6 +84,11 @@ class Lexer {
             const end = this.position
             const text = this.text.slice(start, end)
             const value = Number(text)
+
+            if (isNaN(value)) {
+                this.diagnostics.push(`ERROR: '${text}' is not a valid number.`)
+            }
+
             return new SyntaxToken(SyntaxKind.number, start, text, value)
         } else if (WHITESPACES.includes(char)) {
             // log('white')
