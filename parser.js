@@ -79,18 +79,39 @@ class Parser {
         //     log(`token ${token.kind} '${token.text}' (${token.value})`)
         // });
 
-        const expression = this.parseExpression()
+        const expression = this.parseTerm()
         const endOfFileToken = this.match(SyntaxKind.endOfFile)
 
         return new SyntaxTree(this.diagnostics, expression, endOfFileToken)
     }
 
-    parseExpression() {
-        let left = this.ParsePrimaryExpression()
+    // handles '+' and '-'
+    parseTerm() {
+        let left = this.parseFactor()
 
         while (
             this.currentToken().kind == SyntaxKind.plus
             || this.currentToken().kind == SyntaxKind.minus
+        ) {
+            const operatorToken = this.currentToken()
+
+            this.increasePosition()
+
+            const right = this.parseFactor()
+
+            left = new BinaryExpressionSyntax(left, operatorToken, right)
+        }
+
+        return left
+    }
+
+    // handles '*' and '/', both of which bind arguments stronger than '+' and '-'
+    parseFactor() {
+        let left = this.ParsePrimaryExpression()
+
+        while (
+            this.currentToken().kind == SyntaxKind.multiplication
+            || this.currentToken().kind == SyntaxKind.division
         ) {
             const operatorToken = this.currentToken()
 
