@@ -3,7 +3,9 @@ function main() {
 
     // const line = '1 1 * @#'
     // const line = '1 + 2 + 3'
-    const line = '1 + 2 * 3'
+    // const line = '1 + 2 * 3'
+    const line = '(1 + 2) * 3'
+
     const parser = new Parser(line)
     const syntaxTree = parser.parse()
     const rootExpression = syntaxTree.rootExpression

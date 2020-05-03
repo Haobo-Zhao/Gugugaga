@@ -40,6 +40,7 @@ const SyntaxKind = {
 
     numberExpression: 'numberExpression',
     binaryExpression: 'binaryExpression',
+    parenthesizedExpression: 'parenthesizedExpression',
 }
 
 class Lexer {
@@ -112,7 +113,11 @@ class Lexer {
                 return new SyntaxToken(SyntaxKind.multiplication, this.position, char, null)
             } else if (char == '/') {
                 return new SyntaxToken(SyntaxKind.division, this.position, char, null)
-            } else if (char == '(') {
+            }
+        } else if (PARENTHESIS.includes(char)) {
+            this.increasePosition()
+
+            if (char == '(') {
                 return new SyntaxToken(SyntaxKind.openParenthesis, this.position, char, null)
             } else if (char == ')') {
                 return new SyntaxToken(SyntaxKind.closingParenthesis, this.position, char, null)

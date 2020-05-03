@@ -10,6 +10,7 @@ class Evaluator {
     evaluateExpression(expression) {
         // NumberExpression
         // BinaryExpression
+        // ParenthesizedExpression
 
         if (expression.kind == SyntaxKind.numberExpression) {
             return expression.numberToken.value
@@ -31,6 +32,9 @@ class Evaluator {
             } else {
                 throw new Error(`${operatorToken.kind} is not a valid binary operator`)
             }
+        } else if (expression.kind == SyntaxKind.parenthesizedExpression) {
+            const value = this.evaluateExpression(expression.expression)
+            return value
         }
 
         throw new Error(`${expression.kind} is not a valid expression node.`)

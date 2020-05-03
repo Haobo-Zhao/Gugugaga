@@ -42,6 +42,22 @@ class BinaryExpressionSyntax extends ExpressionSyntax {
     }
 }
 
+class ParenthesizedExpressionSyntax extends ExpressionSyntax {
+    constructor(openParenthesis, expression, closingParenthesis) {
+        super()
+
+        this.openParenthesis = openParenthesis
+        this.expression = expression
+        this.closingParenthesis = closingParenthesis
+
+        this.kind = SyntaxKind.parenthesizedExpression
+    }
+
+    getChildren() {
+        return [this.openParenthesis, this.expression, this.closingParenthesis]
+    }
+}
+
 class SyntaxTree {
     constructor(diagnostics, rootExpression, endOfFileToken) {
         this.diagnostics = diagnostics
@@ -86,6 +102,7 @@ class Parser {
     }
 
     // handles '+' and '-'
+    // and serves as an entry point for parsing any expression most of the time
     parseTerm() {
         let left = this.parseFactor()
 
@@ -107,7 +124,7 @@ class Parser {
 
     // handles '*' and '/', both of which bind arguments stronger than '+' and '-'
     parseFactor() {
-        let left = this.ParsePrimaryExpression()
+        let left = this.parsePrimaryExpression()
 
         while (
             this.currentToken().kind == SyntaxKind.multiplication
@@ -117,7 +134,7 @@ class Parser {
 
             this.increasePosition()
 
-            const right = this.ParsePrimaryExpression()
+            const right = this.parsePrimaryExpression()
 
             left = new BinaryExpressionSyntax(left, operatorToken, right)
         }
@@ -125,13 +142,37 @@ class Parser {
         return left
     }
 
-    ParsePrimaryExpression() {
+    // handles
+    // 1) a single number
+    // 2) a parenthesized expression
+    parsePrimaryExpression() {
+        const token = this.currentToken()
+
+        if (token.kind == SyntaxKind.openParenthesis) {
+            return this.parseParenthesizedExpression()
+        }
+
         const numberToken = this.match(SyntaxKind.number)
 
         return new NumberExpressionSyntax(numberToken)
     }
 
-    // Note: increase this.position when matched
+    parseParenthesizedExpression() {
+        const op = this.currentToken()
+        this.increasePosition()
+
+        // handles nested parenthesized expressions
+        const expression = this.parseTerm()
+
+        // provide the closing one if missed.
+        // this will simplify parsing the AST
+        // and let diagnostics handle errors should there be any
+        const cp = this.match(SyntaxKind.closingParenthesis)
+
+        return new ParenthesizedExpressionSyntax(op, expression, cp)
+    }
+
+    // Note: this method will increase `this.position` when matched
     match(kind) {
         const currentToken = this.currentToken()
         if (currentToken.kind == kind) {

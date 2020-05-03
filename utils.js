@@ -28,4 +28,5 @@ const prettyLog = (node, indent = '', marker = '', isLastChild = true, isRoot = 
 
 const DIGITS = '0123456789'
 const WHITESPACES = ' \s\t\n\r\v'
-const OPERATORS = '+-*/()'
+const OPERATORS = '+-*/'
+const PARENTHESIS = '()'
