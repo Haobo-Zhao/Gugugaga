@@ -91,51 +91,25 @@ class Parser {
     }
 
     parse() {
-        return this.parseExpression()
-    }
-
-    parseExpression() {
-        const expression = this.parseTerm()
+        const expressionSyntax = this.parseExpression()
         const endOfFileToken = this.matchToken(SyntaxKind.endOfFile)
 
-        return new SyntaxTree(this.diagnostics, expression, endOfFileToken)
+        return new SyntaxTree(this.diagnostics, expressionSyntax, endOfFileToken)
     }
 
-    // handles '+' and '-'
-    // and serves as an entry point for parsing any expression most of the time
-    parseTerm() {
-        let left = this.parseFactor()
-
-        while (
-            this.currentToken().kind == SyntaxKind.plus
-            || this.currentToken().kind == SyntaxKind.minus
-        ) {
-            const operatorToken = this.currentToken()
-
-            this.increasePosition()
-
-            const right = this.parseFactor()
-
-            left = new BinaryExpressionSyntax(left, operatorToken, right)
-        }
-
-        return left
-    }
-
-    // handles '*' and '/', both of which bind arguments stronger than '+' and '-'
-    parseFactor() {
+    parseExpression(parentPrecedence = 0) {
         let left = this.parsePrimaryExpression()
 
-        while (
-            this.currentToken().kind == SyntaxKind.multiplication
-            || this.currentToken().kind == SyntaxKind.division
-        ) {
+        while (true) {
             const operatorToken = this.currentToken()
+            const precedence = getBinaryOperatorPrecedence(operatorToken.text)
+            // when at endOfFile, precedence will be 0
+            if (precedence == 0 || precedence <= parentPrecedence) {
+                break
+            }
 
             this.increasePosition()
-
-            const right = this.parsePrimaryExpression()
-
+            const right = this.parseExpression(precedence)
             left = new BinaryExpressionSyntax(left, operatorToken, right)
         }
 

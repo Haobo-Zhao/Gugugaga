@@ -1,5 +1,21 @@
 const log = console.log.bind(console)
 
+const BINARY_OPERATOR_PRECEDENCES = {
+    '/': 10,
+    '*': 10,
+
+    '+': 1,
+    '-': 1,
+}
+
+const getBinaryOperatorPrecedence = (binaryOperator) => {
+    if (binaryOperator in BINARY_OPERATOR_PRECEDENCES) {
+        return BINARY_OPERATOR_PRECEDENCES[binaryOperator]
+    } else {
+        return 0
+    }
+}
+
 const prettyLog = (node, indent = '', marker = '', isLastChild = true, isRoot = true) => {
     let message = `${indent}${marker}${node.kind}`
     if (node && node.value) {
