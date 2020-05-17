@@ -91,12 +91,12 @@ class Parser {
     }
 
     parse() {
-        // this.tokens.forEach(token => {
-        //     log(`token ${token.kind} '${token.text}' (${token.value})`)
-        // });
+        return this.parseExpression()
+    }
 
+    parseExpression() {
         const expression = this.parseTerm()
-        const endOfFileToken = this.match(SyntaxKind.endOfFile)
+        const endOfFileToken = this.matchToken(SyntaxKind.endOfFile)
 
         return new SyntaxTree(this.diagnostics, expression, endOfFileToken)
     }
@@ -152,7 +152,7 @@ class Parser {
             return this.parseParenthesizedExpression()
         }
 
-        const numberToken = this.match(SyntaxKind.number)
+        const numberToken = this.matchToken(SyntaxKind.number)
 
         return new NumberExpressionSyntax(numberToken)
     }
@@ -167,14 +167,15 @@ class Parser {
         // provide the closing one if missed.
         // this will simplify parsing the AST
         // and let diagnostics handle errors should there be any
-        const cp = this.match(SyntaxKind.closingParenthesis)
+        const cp = this.matchToken(SyntaxKind.closingParenthesis)
 
         return new ParenthesizedExpressionSyntax(op, expression, cp)
     }
 
     // Note: this method will increase `this.position` when matched
-    match(kind) {
+    matchToken(kind) {
         const currentToken = this.currentToken()
+
         if (currentToken.kind == kind) {
             this.increasePosition()
             return currentToken
@@ -189,6 +190,7 @@ class Parser {
     peek(offset) {
         const index = this.position + offset
         const l = this.tokens.length
+
         if (index >= l) {
             return this.tokens[l - 1]
         } else {
@@ -202,7 +204,9 @@ class Parser {
 
     nextToken() {
         const currentToken = this.currentToken()
+
         this.increasePosition()
+
         return currentToken
     }
 

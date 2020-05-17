@@ -52,8 +52,6 @@ class Lexer {
 
     currentChar() {
         if (this.position >= this.text.length) {
-            // log(this.position, this.text[this.position])
-            // log('reached the end of code')
             return '\0'
         }
 
@@ -92,7 +90,6 @@ class Lexer {
 
             return new SyntaxToken(SyntaxKind.number, start, text, value)
         } else if (WHITESPACES.includes(char)) {
-            // log('white')
             const start = this.position
             while (WHITESPACES.includes(this.currentChar())) {
                 this.increasePosition()
