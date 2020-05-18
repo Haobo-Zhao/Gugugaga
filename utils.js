@@ -1,5 +1,18 @@
 const log = console.log.bind(console)
 
+const UNARY_OPERATOR_PRECEDENCES = {
+    '+': 20,
+    '-': 20,
+}
+
+const getUnaryOperatorPrecedence = (unaryOperator) => {
+    if (unaryOperator in UNARY_OPERATOR_PRECEDENCES) {
+        return UNARY_OPERATOR_PRECEDENCES[unaryOperator]
+    } else {
+        return 0
+    }
+}
+
 const BINARY_OPERATOR_PRECEDENCES = {
     '/': 10,
     '*': 10,

@@ -3,7 +3,7 @@ function main() {
 
     // const line = '1 1 * @#'
     // const line = '1 + 2 + 3'
-    const line = '1 + 2 * 3'
+    const line = '-(1 + 1) + 2 * 3'
     // const line = '(1 + 2) * 3'
 
     const parser = new Parser(line)

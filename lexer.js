@@ -38,6 +38,7 @@ const SyntaxKind = {
     badToken: 'badToken',
     endOfFile: 'endOfFile',
 
+    unaryExpression: 'unaryExpression',
     numberExpression: 'numberExpression',
     binaryExpression: 'binaryExpression',
     parenthesizedExpression: 'parenthesizedExpression',

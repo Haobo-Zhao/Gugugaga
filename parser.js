@@ -1,10 +1,11 @@
-// 1 + 2 * 3
+// -1 + 2 * 3
 //
-//   +
-//  / \
-// 1   *
-//    / \
-//   2   3
+//    +
+//  /  \
+// -    *
+// |   / \
+// 1  2   3
+
 
 class ExpressionSyntax extends SyntaxNode {
     constructor() {
@@ -23,6 +24,21 @@ class NumberExpressionSyntax extends ExpressionSyntax {
 
     getChildren() {
         return [this.numberToken]
+    }
+}
+
+class UnaryExpressionSyntax extends ExpressionSyntax {
+    constructor(operatorToken, operandExpression) {
+        super()
+
+        this.operatorToken = operatorToken
+        this.operandExpression = operandExpression
+
+        this.kind = SyntaxKind.unaryExpression
+    }
+
+    getChildren() {
+        return [this.operatorToken, this.operandExpression]
     }
 }
 
@@ -98,7 +114,19 @@ class Parser {
     }
 
     parseExpression(parentPrecedence = 0) {
-        let left = this.parsePrimaryExpression()
+        let left
+        let firstToken = this.currentToken()
+        const unaryPrecedence = getUnaryOperatorPrecedence(firstToken.text)
+
+        // handles unary expressions
+        if (unaryPrecedence != 0 && unaryPrecedence >= parentPrecedence) {
+            this.increasePosition()
+            const operandExpression = this.parseExpression(unaryPrecedence)
+            left = new UnaryExpressionSyntax(firstToken, operandExpression)
+            // debugger
+        } else {
+            left = this.parsePrimaryExpression()
+        }
 
         while (true) {
             const operatorToken = this.currentToken()
@@ -136,7 +164,7 @@ class Parser {
         this.increasePosition()
 
         // handles nested parenthesized expressions
-        const expression = this.parseTerm()
+        const expression = this.parseExpression()
 
         // provide the closing one if missed.
         // this will simplify parsing the AST
