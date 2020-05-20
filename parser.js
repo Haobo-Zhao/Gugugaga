@@ -13,17 +13,17 @@ class ExpressionSyntax extends SyntaxNode {
     }
 }
 
-class NumberExpressionSyntax extends ExpressionSyntax {
-    constructor(numberToken) {
+class literalExpressionSyntax extends ExpressionSyntax {
+    constructor(literalToken) {
         super()
 
-        this.numberToken = numberToken
+        this.literalToken = literalToken
 
-        this.kind = SyntaxKind.numberExpression
+        this.kind = SyntaxKind.literalExpression
     }
 
     getChildren() {
-        return [this.numberToken]
+        return [this.literalToken]
     }
 }
 
@@ -43,18 +43,18 @@ class UnaryExpressionSyntax extends ExpressionSyntax {
 }
 
 class BinaryExpressionSyntax extends ExpressionSyntax {
-    constructor(left, operatorToken, right) {
+    constructor(leftExpression, operatorToken, rightExpression) {
         super()
 
-        this.left = left
+        this.leftExpression = leftExpression
         this.operatorToken = operatorToken
-        this.right = right
+        this.rightExpression = rightExpression
 
         this.kind = SyntaxKind.binaryExpression
     }
 
     getChildren() {
-        return [this.left, this.operatorToken, this.right]
+        return [this.leftExpression, this.operatorToken, this.rightExpression]
     }
 }
 
@@ -114,7 +114,7 @@ class Parser {
     }
 
     parseExpression(parentPrecedence = 0) {
-        let left
+        let leftExpression
         let firstToken = this.currentToken()
         const unaryPrecedence = getUnaryOperatorPrecedence(firstToken.text)
 
@@ -122,10 +122,10 @@ class Parser {
         if (unaryPrecedence != 0 && unaryPrecedence >= parentPrecedence) {
             this.increasePosition()
             const operandExpression = this.parseExpression(unaryPrecedence)
-            left = new UnaryExpressionSyntax(firstToken, operandExpression)
+            leftExpression = new UnaryExpressionSyntax(firstToken, operandExpression)
             // debugger
         } else {
-            left = this.parsePrimaryExpression()
+            leftExpression = this.parsePrimaryExpression()
         }
 
         while (true) {
@@ -137,15 +137,15 @@ class Parser {
             }
 
             this.increasePosition()
-            const right = this.parseExpression(precedence)
-            left = new BinaryExpressionSyntax(left, operatorToken, right)
+            const rightExpression = this.parseExpression(precedence)
+            leftExpression = new BinaryExpressionSyntax(leftExpression, operatorToken, rightExpression)
         }
 
-        return left
+        return leftExpression
     }
 
     // handles
-    // 1) a single number
+    // 1) a single literal
     // 2) a parenthesized expression
     parsePrimaryExpression() {
         const token = this.currentToken()
@@ -154,9 +154,9 @@ class Parser {
             return this.parseParenthesizedExpression()
         }
 
-        const numberToken = this.matchToken(SyntaxKind.number)
+        const literalToken = this.matchToken(SyntaxKind.literal)
 
-        return new NumberExpressionSyntax(numberToken)
+        return new literalExpressionSyntax(literalToken)
     }
 
     parseParenthesizedExpression() {

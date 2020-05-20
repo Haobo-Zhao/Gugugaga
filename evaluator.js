@@ -1,49 +1,67 @@
-class Evaluator {
-    constructor(rootExpression) {
+class Evaluator
+{
+    constructor(rootExpression)
+    {
         this.rootExpression = rootExpression
     }
 
-    evaluate() {
+    evaluate()
+    {
         return this.evaluateExpression(this.rootExpression)
     }
 
-    evaluateExpression(syntaxNode) {
-        // NumberExpression
+    evaluateExpression(syntaxNode)
+    {
+        // LiteralExpression
         // BinaryExpression
         // ParenthesizedExpression
 
-        if (syntaxNode.kind == SyntaxKind.numberExpression) {
-            return syntaxNode.numberToken.value
-        } else if (syntaxNode.kind == SyntaxKind.binaryExpression) {
-            // postorder traversal
+        switch (syntaxNode.kind) {
+            case BoundNodeKind.literalExpression:
+                return syntaxNode.value
 
-            const leftVal = this.evaluateExpression(syntaxNode.left)
-            const rightVal = this.evaluateExpression(syntaxNode.right)
-            const operatorToken = syntaxNode.operatorToken
+            case BoundNodeKind.unaryExpression:
+                {
+                    const operandValue = this.evaluateExpression(syntaxNode.boundOperandExpression)
 
-            if (operatorToken.kind == SyntaxKind.plus) {
-                return leftVal + rightVal
-            } else if (operatorToken.kind == SyntaxKind.minus) {
-                return leftVal - rightVal
-            } else if (operatorToken.kind == SyntaxKind.multiplication) {
-                return leftVal * rightVal
-            } else if (operatorToken.kind == SyntaxKind.division) {
-                return leftVal / rightVal
-            } else {
-                throw new Error(`${operatorToken.kind} is not a valid binary operator`)
-            }
-        } else if (syntaxNode.kind == SyntaxKind.parenthesizedExpression) {
-            const value = this.evaluateExpression(syntaxNode.expression)
-            return value
-        } else if (syntaxNode.kind == SyntaxKind.unaryExpression) {
-            const operandValue = this.evaluateExpression(syntaxNode.operandExpression)
-            if (syntaxNode.operatorToken.kind == SyntaxKind.minus) {
-                return -operandValue
-            } else if (syntaxNode.operatorToken.kind == SyntaxKind.plus) {
-                return operandValue
-            } else {
-                throw new Error(`${syntaxNode.kind} is not a valid unary operator.`)
-            }
+                    switch (syntaxNode.boundUnaryOperatorKind) {
+                        case BoundUnaryOperatorKind.identity:
+                            return operandValue
+
+                        case BoundUnaryOperatorKind.negation:
+                            return -operandValue
+
+                        default:
+                            throw new Error(`Unexpected unary operator ${syntaxNode.boundUnaryOperatorKind}`)
+                    }
+                }
+
+            case BoundNodeKind.binaryExpression:
+                {
+                    const leftValue = this.evaluateExpression(syntaxNode.boundLeftExpression)
+                    const rightValue = this.evaluateExpression(syntaxNode.boundRightExpression)
+
+                    switch (syntaxNode.boundBinaryOperatorKind) {
+                        case BoundBinaryOperatorKind.plus:
+                            return leftValue + rightValue
+
+                        case BoundBinaryOperatorKind.minus:
+                            return leftValue - rightValue
+
+                        case BoundBinaryOperatorKind.multiplication:
+                            return leftValue * rightValue
+
+                        case BoundBinaryOperatorKind.division:
+                            return leftValue / rightValue
+
+                        default:
+                            debugger
+                            throw new Error(`unexpected binary operator ${syntaxNode.boundBinaryOperatorKind}`)
+                    }
+                }
+
+            default:
+                break;
         }
 
         throw new Error(`${syntaxNode.kind} is not a valid expression node.`)

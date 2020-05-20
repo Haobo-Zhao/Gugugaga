@@ -25,6 +25,7 @@ class SyntaxToken extends SyntaxNode {
 
 const SyntaxKind = {
     number: 'number',
+    literal: 'literal',
     whitespace: 'whitespace',
 
     plus: 'plus',
@@ -39,7 +40,7 @@ const SyntaxKind = {
     endOfFile: 'endOfFile',
 
     unaryExpression: 'unaryExpression',
-    numberExpression: 'numberExpression',
+    literalExpression: 'literalExpression',
     binaryExpression: 'binaryExpression',
     parenthesizedExpression: 'parenthesizedExpression',
 }
@@ -64,7 +65,7 @@ class Lexer {
     }
 
     nextToken() {
-        // number
+        // literal
         // + - * / ( )
         // whlitespace
 
@@ -86,10 +87,10 @@ class Lexer {
             const value = Number(text)
 
             if (isNaN(value)) {
-                this.diagnostics.push(`ERROR: '${text}' is not a valid number.`)
+                this.diagnostics.push(`ERROR: '${text}' is not a valid literal.`)
             }
 
-            return new SyntaxToken(SyntaxKind.number, start, text, value)
+            return new SyntaxToken(SyntaxKind.literal, start, text, value)
         } else if (WHITESPACES.includes(char)) {
             const start = this.position
             while (WHITESPACES.includes(this.currentChar())) {
