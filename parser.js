@@ -13,12 +13,15 @@ class ExpressionSyntax extends SyntaxNode {
     }
 }
 
-class literalExpressionSyntax extends ExpressionSyntax {
+class LiteralExpressionSyntax extends ExpressionSyntax {
     constructor(literalToken) {
         super()
+        this.initializeInstance(literalToken, literalToken.value)
+    }
 
+    initializeInstance(literalToken, value) {
         this.literalToken = literalToken
-
+        this.value = value
         this.kind = SyntaxKind.literalExpression
     }
 
@@ -154,9 +157,16 @@ class Parser {
             return this.parseParenthesizedExpression()
         }
 
-        const literalToken = this.matchToken(SyntaxKind.literal)
+        if (token.kind == SyntaxKind.trueKeyword || token.kind == SyntaxKind.falseKeyword) {
+            const value = token.kind == SyntaxKind.trueKeyword
+            token.value = value
+            this.increasePosition()
+            return new LiteralExpressionSyntax(token)
+        }
 
-        return new literalExpressionSyntax(literalToken)
+        const numberToken = this.matchToken(SyntaxKind.number)
+
+        return new LiteralExpressionSyntax(numberToken)
     }
 
     parseParenthesizedExpression() {

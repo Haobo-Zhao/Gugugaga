@@ -37,10 +37,11 @@ class Binder
         }
     }
 
+    // 1) number
+    // 2) boolean
     bindLiteralExpression(expressionSyntax)
     {
         let value = expressionSyntax.literalToken.value
-        value = value || 0
 
         return new BoundLiteralExpression(value)
     }

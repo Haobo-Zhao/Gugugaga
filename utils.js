@@ -1,5 +1,17 @@
 const log = console.log.bind(console)
 
+const getKeywordSyntaxKind = (text) =>
+{
+    switch (text) {
+        case 'true':
+            return SyntaxKind.trueKeyword
+        case 'false':
+            return SyntaxKind.falseKeyword
+        default:
+            return SyntaxKind.IdentifierToken
+    }
+}
+
 const UNARY_OPERATOR_PRECEDENCES = {
     '+': 20,
     '-': 20,

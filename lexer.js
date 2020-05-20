@@ -24,6 +24,9 @@ class SyntaxToken extends SyntaxNode {
 }
 
 const SyntaxKind = {
+    falseKeyword: 'false keyword',
+    trueKeyword: 'true keyword',
+
     number: 'number',
     literal: 'literal',
     whitespace: 'whitespace',
@@ -35,6 +38,8 @@ const SyntaxKind = {
 
     openParenthesis: 'openParenthesis',
     closingParenthesis: 'closingParenthesis',
+
+    IdentifierToken: 'IdentifierToken',
 
     badToken: 'badToken',
     endOfFile: 'endOfFile',
@@ -90,7 +95,7 @@ class Lexer {
                 this.diagnostics.push(`ERROR: '${text}' is not a valid literal.`)
             }
 
-            return new SyntaxToken(SyntaxKind.literal, start, text, value)
+            return new SyntaxToken(SyntaxKind.number, start, text, value)
         } else if (WHITESPACES.includes(char)) {
             const start = this.position
             while (WHITESPACES.includes(this.currentChar())) {
@@ -121,6 +126,18 @@ class Lexer {
             } else if (char == ')') {
                 return new SyntaxToken(SyntaxKind.closingParenthesis, this.position, char, null)
             }
+        } else if (char == 't' || char == 'f') {
+            const start = this.position
+
+            while ('true'.includes(this.currentChar()) || 'false'.includes(this.currentChar())) {
+                this.increasePosition()
+            }
+
+            const end = this.position
+            const keyword = this.text.slice(start, end)
+            const syntaxKind = getKeywordSyntaxKind(keyword)
+
+            return new SyntaxToken(syntaxKind, start, keyword, null)
         }
 
         const errorMessage = `ERROR: bad character: ${this.currentChar()}`
