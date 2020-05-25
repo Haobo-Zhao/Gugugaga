@@ -7,12 +7,16 @@ const getKeywordSyntaxKind = (text) =>
             return SyntaxKind.trueKeyword
         case 'false':
             return SyntaxKind.falseKeyword
+        case '!':
+            return SyntaxKind.logicalNegation
         default:
             return SyntaxKind.IdentifierToken
     }
 }
 
 const UNARY_OPERATOR_PRECEDENCES = {
+    '!': 30,
+
     '+': 20,
     '-': 20,
 }

@@ -1,6 +1,8 @@
 const BoundUnaryOperatorKind = {
     identity: 'identity',
     negation: 'negation',
+
+    logicalNegation: 'logicalNegation',
 }
 
 const BoundBinaryOperatorKind = {
@@ -11,9 +13,9 @@ const BoundBinaryOperatorKind = {
 }
 
 const BoundNodeKind = {
-    literalExpression: 'bound literal expression',
-    unaryExpression: 'bound unary expression',
-    binaryExpression: 'bound binary expression'
+    literalExpression: 'boundLiteralExpression',
+    unaryExpression: 'boundUunaryExpression',
+    binaryExpression: 'boundBinaryExpression',
 }
 
 class Binder
@@ -63,7 +65,7 @@ class Binder
 
     bindUnaryOperatorKind(syntaxKind, operandType)
     {
-        if (operandType != 'number') {
+        if (operandType != 'number' && operandType != 'boolean') {
             return null
         }
 
@@ -72,6 +74,8 @@ class Binder
                 return BoundUnaryOperatorKind.identity
             case SyntaxKind.minus:
                 return BoundUnaryOperatorKind.negation
+            case SyntaxKind.logicalNegation:
+                return BoundUnaryOperatorKind.logicalNegation
             default:
                 throw new Error(`unexpected unary operator ${syntaxKind}`)
         }
@@ -84,7 +88,7 @@ class Binder
         const boundOperatorTokenKind = this.bindBinaryOperatorKind(expressionSyntax.operatorToken.kind, boundLeftExpression.type)
 
         if (boundOperatorTokenKind == null) {
-            const message = `Unary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundOperandExpression.type}`
+            const message = `Binary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundOperandExpression.type}`
             this.diagnostics.push(message)
 
             // returned value is arbitrary

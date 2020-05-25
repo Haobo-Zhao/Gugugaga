@@ -118,15 +118,14 @@ class Parser {
 
     parseExpression(parentPrecedence = 0) {
         let leftExpression
-        let firstToken = this.currentToken()
-        const unaryPrecedence = getUnaryOperatorPrecedence(firstToken.text)
+        let currentToken = this.currentToken()
+        const unaryPrecedence = getUnaryOperatorPrecedence(currentToken.text)
 
         // handles unary expressions
         if (unaryPrecedence != 0 && unaryPrecedence >= parentPrecedence) {
             this.increasePosition()
             const operandExpression = this.parseExpression(unaryPrecedence)
-            leftExpression = new UnaryExpressionSyntax(firstToken, operandExpression)
-            // debugger
+            leftExpression = new UnaryExpressionSyntax(currentToken, operandExpression)
         } else {
             leftExpression = this.parsePrimaryExpression()
         }

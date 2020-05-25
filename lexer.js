@@ -24,8 +24,8 @@ class SyntaxToken extends SyntaxNode {
 }
 
 const SyntaxKind = {
-    falseKeyword: 'false keyword',
-    trueKeyword: 'true keyword',
+    falseKeyword: 'falseKeyword',
+    trueKeyword: 'trueKeyword',
 
     number: 'number',
     literal: 'literal',
@@ -43,6 +43,8 @@ const SyntaxKind = {
 
     badToken: 'badToken',
     endOfFile: 'endOfFile',
+
+    logicalNegation: 'logicalNegation',
 
     unaryExpression: 'unaryExpression',
     literalExpression: 'literalExpression',
@@ -63,6 +65,15 @@ class Lexer {
         }
 
         return this.text[this.position]
+    }
+
+    lookAhead(offset) {
+        const i = this.position + offset
+        if (i >= this.text.length) {
+            return '\0'
+        }
+
+        return this.text[i]
     }
 
     increasePosition() {
@@ -138,6 +149,13 @@ class Lexer {
             const syntaxKind = getKeywordSyntaxKind(keyword)
 
             return new SyntaxToken(syntaxKind, start, keyword, null)
+        } else if (char == '!') {
+            this.increasePosition()
+
+            const start = this.position
+            const syntaxKind = getKeywordSyntaxKind(char)
+
+             return new SyntaxToken(syntaxKind, start, char, null)
         }
 
         const errorMessage = `ERROR: bad character: ${this.currentChar()}`

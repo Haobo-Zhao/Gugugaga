@@ -31,6 +31,9 @@ class Evaluator
                         case BoundUnaryOperatorKind.negation:
                             return -operandValue
 
+                        case BoundUnaryOperatorKind.logicalNegation:
+                            return !operandValue
+
                         default:
                             throw new Error(`Unexpected unary operator ${syntaxNode.boundUnaryOperatorKind}`)
                     }
@@ -55,7 +58,7 @@ class Evaluator
                             return leftValue / rightValue
 
                         default:
-                            debugger
+
                             throw new Error(`unexpected binary operator ${syntaxNode.boundBinaryOperatorKind}`)
                     }
                 }
