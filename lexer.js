@@ -45,6 +45,8 @@ const SyntaxKind = {
     endOfFile: 'endOfFile',
 
     logicalNegation: 'logicalNegation',
+    logicalAnd: 'logicalAnd',
+    logicalOr: 'logicalOr',
 
     unaryExpression: 'unaryExpression',
     literalExpression: 'literalExpression',
@@ -153,9 +155,22 @@ class Lexer {
             this.increasePosition()
 
             const start = this.position
-            const syntaxKind = getKeywordSyntaxKind(char)
+            const syntaxKind = SyntaxKind.logicalNegation
 
              return new SyntaxToken(syntaxKind, start, char, null)
+        } else if (char == '&' || char == '|') {
+            const nextChar = this.lookAhead(1)
+            if (char == nextChar) {
+                this.increasePosition()
+                this.increasePosition()
+
+                const start = this.position
+                const syntaxKind = char == '&'
+                    ? SyntaxKind.logicalAnd
+                    : SyntaxKind.logicalOr
+
+                return new SyntaxToken(syntaxKind, start, `${char}${nextChar}`, null)
+            }
         }
 
         const errorMessage = `ERROR: bad character: ${this.currentChar()}`

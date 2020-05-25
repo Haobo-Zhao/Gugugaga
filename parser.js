@@ -156,10 +156,12 @@ class Parser {
             return this.parseParenthesizedExpression()
         }
 
+        // handles booleans
         if (token.kind == SyntaxKind.trueKeyword || token.kind == SyntaxKind.falseKeyword) {
             const value = token.kind == SyntaxKind.trueKeyword
             token.value = value
             this.increasePosition()
+
             return new LiteralExpressionSyntax(token)
         }
 

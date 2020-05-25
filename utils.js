@@ -5,10 +5,10 @@ const getKeywordSyntaxKind = (text) =>
     switch (text) {
         case 'true':
             return SyntaxKind.trueKeyword
+
         case 'false':
             return SyntaxKind.falseKeyword
-        case '!':
-            return SyntaxKind.logicalNegation
+
         default:
             return SyntaxKind.IdentifierToken
     }
@@ -30,11 +30,14 @@ const getUnaryOperatorPrecedence = (unaryOperator) => {
 }
 
 const BINARY_OPERATOR_PRECEDENCES = {
-    '/': 10,
-    '*': 10,
+    '/': 15,
+    '*': 15,
 
-    '+': 1,
-    '-': 1,
+    '+': 10,
+    '-': 10,
+
+    '&&': 1,
+    '||': 1,
 }
 
 const getBinaryOperatorPrecedence = (binaryOperator) => {
@@ -47,7 +50,7 @@ const getBinaryOperatorPrecedence = (binaryOperator) => {
 
 const prettyLog = (node, indent = '', marker = '', isLastChild = true, isRoot = true) => {
     let message = `${indent}${marker}${node.kind}`
-    if (node && node.value) {
+    if (node && node.value && typeof(node.value) != 'boolean') {
         message += ` ${node.value}`
     }
     log(message)

@@ -10,6 +10,9 @@ const BoundBinaryOperatorKind = {
     minus: 'minus',
     multiplication: 'multiplication',
     division: 'division',
+
+    logicalAnd: 'logicalAnd',
+    logicalOr: 'logicalOr',
 }
 
 const BoundNodeKind = {
@@ -72,10 +75,13 @@ class Binder
         switch (syntaxKind) {
             case SyntaxKind.plus:
                 return BoundUnaryOperatorKind.identity
+
             case SyntaxKind.minus:
                 return BoundUnaryOperatorKind.negation
+
             case SyntaxKind.logicalNegation:
                 return BoundUnaryOperatorKind.logicalNegation
+
             default:
                 throw new Error(`unexpected unary operator ${syntaxKind}`)
         }
@@ -85,10 +91,10 @@ class Binder
     {
         const boundLeftExpression = this.bindExpression(expressionSyntax.leftExpression)
         const boundRightExpression = this.bindExpression(expressionSyntax.rightExpression)
-        const boundOperatorTokenKind = this.bindBinaryOperatorKind(expressionSyntax.operatorToken.kind, boundLeftExpression.type)
+        const boundOperatorTokenKind = this.bindBinaryOperatorKind(expressionSyntax.operatorToken.kind, boundLeftExpression.type, boundRightExpression.type)
 
         if (boundOperatorTokenKind == null) {
-            const message = `Binary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundOperandExpression.type}`
+            const message = `Binary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundLeftExpression.type}`
             this.diagnostics.push(message)
 
             // returned value is arbitrary
@@ -100,19 +106,29 @@ class Binder
 
     bindBinaryOperatorKind(kind, leftType, rightType)
     {
-        if (leftType != 'number' || leftType != 'number') {
+        if ((leftType != 'number' || rightType != 'number') && (leftType != 'boolean' || rightType != 'boolean')) {
             return null
         }
 
         switch (kind) {
             case SyntaxKind.plus:
                 return BoundBinaryOperatorKind.plus
+
             case SyntaxKind.minus:
                 return BoundBinaryOperatorKind.minus
+
             case SyntaxKind.multiplication:
                 return BoundBinaryOperatorKind.multiplication
+
             case SyntaxKind.division:
                 return BoundBinaryOperatorKind.division
+
+            case SyntaxKind.logicalAnd:
+                return BoundBinaryOperatorKind.logicalAnd
+
+            case SyntaxKind.logicalOr:
+                return BoundBinaryOperatorKind.logicalOr
+
             default:
                 throw new Error(`unexpected binary operator ${kind}`)
         }

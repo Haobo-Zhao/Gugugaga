@@ -57,6 +57,12 @@ class Evaluator
                         case BoundBinaryOperatorKind.division:
                             return leftValue / rightValue
 
+                        case BoundBinaryOperatorKind.logicalAnd:
+                            return leftValue && rightValue
+
+                        case BoundBinaryOperatorKind.logicalOr:
+                            return leftValue || rightValue
+
                         default:
 
                             throw new Error(`unexpected binary operator ${syntaxNode.boundBinaryOperatorKind}`)
