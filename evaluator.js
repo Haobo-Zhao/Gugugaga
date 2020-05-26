@@ -12,9 +12,9 @@ class Evaluator
 
     evaluateExpression(syntaxNode)
     {
-        // LiteralExpression
-        // BinaryExpression
-        // ParenthesizedExpression
+        // BoundLiteralExpression
+        // BoundBinaryExpression
+        // BoundParenthesizedExpression
 
         switch (syntaxNode.kind) {
             case BoundNodeKind.literalExpression:
@@ -24,7 +24,7 @@ class Evaluator
                 {
                     const operandValue = this.evaluateExpression(syntaxNode.boundOperandExpression)
 
-                    switch (syntaxNode.boundUnaryOperatorKind) {
+                    switch (syntaxNode.boundUnaryOperator.boundUnaryOperatorKind) {
                         case BoundUnaryOperatorKind.identity:
                             return operandValue
 
@@ -44,7 +44,7 @@ class Evaluator
                     const leftValue = this.evaluateExpression(syntaxNode.boundLeftExpression)
                     const rightValue = this.evaluateExpression(syntaxNode.boundRightExpression)
 
-                    switch (syntaxNode.boundBinaryOperatorKind) {
+                    switch (syntaxNode.boundBinaryOperator.boundBinaryOperatorKind) {
                         case BoundBinaryOperatorKind.plus:
                             return leftValue + rightValue
 
@@ -64,7 +64,6 @@ class Evaluator
                             return leftValue || rightValue
 
                         default:
-
                             throw new Error(`unexpected binary operator ${syntaxNode.boundBinaryOperatorKind}`)
                     }
                 }

@@ -15,11 +15,68 @@ const BoundBinaryOperatorKind = {
     logicalOr: 'logicalOr',
 }
 
-const BoundNodeKind = {
-    literalExpression: 'boundLiteralExpression',
-    unaryExpression: 'boundUunaryExpression',
-    binaryExpression: 'boundBinaryExpression',
+class BoundUnaryOperator
+{
+    constructor(syntaxKind, boundUnaryOperatorKind, operandType)
+    {
+        this.syntaxKind = syntaxKind
+        this.boundUnaryOperatorKind = boundUnaryOperatorKind
+        this.operandType = operandType
+        this.resultType = operandType
+    }
+
+    static bind(syntaxKind, operandType)
+    {
+        for (const boundUnaryOperator of BOUND_UNARY_OPERATORS) {
+            if (boundUnaryOperator.syntaxKind == syntaxKind && boundUnaryOperator.operandType == operandType) {
+                return boundUnaryOperator
+            }
+        }
+
+        return null
+    }
 }
+
+const BOUND_UNARY_OPERATORS = [
+    new BoundUnaryOperator(SyntaxKind.plus, BoundUnaryOperatorKind.identity, typeof (1)),
+    new BoundUnaryOperator(SyntaxKind.minus, BoundUnaryOperatorKind.negation, typeof (1)),
+
+    new BoundUnaryOperator(SyntaxKind.logicalNegation, BoundUnaryOperatorKind.logicalNegation, typeof (true)),
+]
+
+
+class BoundBinaryOperator
+{
+    constructor(syntaxKind, boundBinaryOperatorKind, operandType, resultType)
+    {
+        this.syntaxKind = syntaxKind
+        this.boundBinaryOperatorKind = boundBinaryOperatorKind
+        this.operandType = operandType
+        this.resultType = resultType
+    }
+
+    static bind(syntaxKind, operandType)
+    {
+        for (const boundBinaryOperator of BOUND_BINARY_OPERATORS) {
+            if (boundBinaryOperator.syntaxKind == syntaxKind && boundBinaryOperator.operandType == operandType) {
+                return boundBinaryOperator
+            }
+        }
+
+        return null
+    }
+}
+
+const BOUND_BINARY_OPERATORS = [
+    new BoundBinaryOperator(SyntaxKind.plus, BoundBinaryOperatorKind.plus, typeof (1)),
+    new BoundBinaryOperator(SyntaxKind.minus, BoundBinaryOperatorKind.nimus, typeof (1)),
+    new BoundBinaryOperator(SyntaxKind.multiplication, BoundBinaryOperatorKind.multiplication, typeof (1)),
+    new BoundBinaryOperator(SyntaxKind.division, BoundBinaryOperatorKind.division, typeof (1)),
+
+    new BoundBinaryOperator(SyntaxKind.logicalAnd, BoundBinaryOperatorKind.logicalAnd, typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.logicalOr, BoundBinaryOperatorKind.logicalOr, typeof (true)),
+]
+
 
 class Binder
 {
@@ -54,46 +111,26 @@ class Binder
     bindUnaryExpression(expressionSyntax)
     {
         const boundOperandExpression = this.bindExpression(expressionSyntax.operandExpression)
-        const boundOperatorTokenKind = this.bindUnaryOperatorKind(expressionSyntax.operatorToken.kind, boundOperandExpression.type)
+        const boundOperator = BoundUnaryOperator.bind(expressionSyntax.operatorToken.kind, boundOperandExpression.type)
 
-        if (boundOperatorTokenKind == null) {
+        if (boundOperator == null) {
             const message = `Unary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundOperandExpression.type}`
             this.diagnostics.push(message)
 
             return boundOperandExpression
         }
 
-        return new BoundUnaryExpression(boundOperatorTokenKind, boundOperandExpression)
+        return new BoundUnaryExpression(boundOperator, boundOperandExpression)
     }
 
-    bindUnaryOperatorKind(syntaxKind, operandType)
-    {
-        if (operandType != 'number' && operandType != 'boolean') {
-            return null
-        }
-
-        switch (syntaxKind) {
-            case SyntaxKind.plus:
-                return BoundUnaryOperatorKind.identity
-
-            case SyntaxKind.minus:
-                return BoundUnaryOperatorKind.negation
-
-            case SyntaxKind.logicalNegation:
-                return BoundUnaryOperatorKind.logicalNegation
-
-            default:
-                throw new Error(`unexpected unary operator ${syntaxKind}`)
-        }
-    }
 
     bindBinaryExpression(expressionSyntax)
     {
         const boundLeftExpression = this.bindExpression(expressionSyntax.leftExpression)
         const boundRightExpression = this.bindExpression(expressionSyntax.rightExpression)
-        const boundOperatorTokenKind = this.bindBinaryOperatorKind(expressionSyntax.operatorToken.kind, boundLeftExpression.type, boundRightExpression.type)
+        const boundOperator = BoundBinaryOperator.bind(expressionSyntax.operatorToken.kind, boundLeftExpression.type)
 
-        if (boundOperatorTokenKind == null) {
+        if (boundOperator == null) {
             const message = `Binary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundLeftExpression.type}`
             this.diagnostics.push(message)
 
@@ -101,43 +138,20 @@ class Binder
             return boundLeftExpression
         }
 
-        return new BoundBinaryExpression(boundLeftExpression, boundOperatorTokenKind, boundRightExpression)
+        return new BoundBinaryExpression(boundLeftExpression, boundOperator, boundRightExpression)
     }
 
-    bindBinaryOperatorKind(kind, leftType, rightType)
-    {
-        if ((leftType != 'number' || rightType != 'number') && (leftType != 'boolean' || rightType != 'boolean')) {
-            return null
-        }
-
-        switch (kind) {
-            case SyntaxKind.plus:
-                return BoundBinaryOperatorKind.plus
-
-            case SyntaxKind.minus:
-                return BoundBinaryOperatorKind.minus
-
-            case SyntaxKind.multiplication:
-                return BoundBinaryOperatorKind.multiplication
-
-            case SyntaxKind.division:
-                return BoundBinaryOperatorKind.division
-
-            case SyntaxKind.logicalAnd:
-                return BoundBinaryOperatorKind.logicalAnd
-
-            case SyntaxKind.logicalOr:
-                return BoundBinaryOperatorKind.logicalOr
-
-            default:
-                throw new Error(`unexpected binary operator ${kind}`)
-        }
-    }
 }
 
 class BoundNode
 {
     constructor() { }
+}
+
+const BoundNodeKind = {
+    literalExpression: 'boundLiteralExpression',
+    unaryExpression: 'boundUunaryExpression',
+    binaryExpression: 'boundBinaryExpression',
 }
 
 class BoundExpression extends BoundNode
@@ -162,11 +176,13 @@ class BoundLiteralExpression extends BoundExpression
     }
 }
 
-class BoundUnaryExpression
+class BoundUnaryExpression extends BoundExpression
 {
-    constructor(boundUnaryOperatorKind, boundOperandExpression)
+    constructor(boundUnaryOperator, boundOperandExpression)
     {
-        this.boundUnaryOperatorKind = boundUnaryOperatorKind
+        super()
+
+        this.boundUnaryOperator = boundUnaryOperator
         this.boundOperandExpression = boundOperandExpression
 
         this.kind = BoundNodeKind.unaryExpression
@@ -174,12 +190,14 @@ class BoundUnaryExpression
     }
 }
 
-class BoundBinaryExpression
+class BoundBinaryExpression extends BoundExpression
 {
-    constructor(boundLeftExpression, boundBinaryOperatorKind, boundRightExpression)
+    constructor(boundLeftExpression, boundBinaryOperator, boundRightExpression)
     {
+        super()
+
         this.boundLeftExpression = boundLeftExpression
-        this.boundBinaryOperatorKind = boundBinaryOperatorKind
+        this.boundBinaryOperator = boundBinaryOperator
         this.boundRightExpression = boundRightExpression
 
         this.kind = BoundNodeKind.binaryExpression
