@@ -13,6 +13,9 @@ const BoundBinaryOperatorKind = {
 
     logicalAnd: 'logicalAnd',
     logicalOr: 'logicalOr',
+
+    equals: 'equals',
+    unequals: 'unequals',
 }
 
 class BoundUnaryOperator
@@ -68,13 +71,21 @@ class BoundBinaryOperator
 }
 
 const BOUND_BINARY_OPERATORS = [
-    new BoundBinaryOperator(SyntaxKind.plus, BoundBinaryOperatorKind.plus, typeof (1)),
-    new BoundBinaryOperator(SyntaxKind.minus, BoundBinaryOperatorKind.nimus, typeof (1)),
-    new BoundBinaryOperator(SyntaxKind.multiplication, BoundBinaryOperatorKind.multiplication, typeof (1)),
-    new BoundBinaryOperator(SyntaxKind.division, BoundBinaryOperatorKind.division, typeof (1)),
+    // of numbers
+    new BoundBinaryOperator(SyntaxKind.plus, BoundBinaryOperatorKind.plus, typeof (1), typeof (1)),
+    new BoundBinaryOperator(SyntaxKind.minus, BoundBinaryOperatorKind.nimus, typeof (1), typeof (1)),
+    new BoundBinaryOperator(SyntaxKind.multiplication, BoundBinaryOperatorKind.multiplication, typeof (1), typeof (1)),
+    new BoundBinaryOperator(SyntaxKind.division, BoundBinaryOperatorKind.division, typeof (1), typeof (1)),
 
-    new BoundBinaryOperator(SyntaxKind.logicalAnd, BoundBinaryOperatorKind.logicalAnd, typeof (true)),
-    new BoundBinaryOperator(SyntaxKind.logicalOr, BoundBinaryOperatorKind.logicalOr, typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.equals, BoundBinaryOperatorKind.equals, typeof (1), typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.unequals, BoundBinaryOperatorKind.unequals, typeof (1), typeof (true)),
+
+    // of booleans
+    new BoundBinaryOperator(SyntaxKind.logicalAnd, BoundBinaryOperatorKind.logicalAnd, typeof (true), typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.logicalOr, BoundBinaryOperatorKind.logicalOr, typeof (true), typeof (true)),
+
+    new BoundBinaryOperator(SyntaxKind.equals, BoundBinaryOperatorKind.equals, typeof (true), typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.unequals, BoundBinaryOperatorKind.unequals, typeof (true), typeof (true)),
 ]
 
 
@@ -186,7 +197,7 @@ class BoundUnaryExpression extends BoundExpression
         this.boundOperandExpression = boundOperandExpression
 
         this.kind = BoundNodeKind.unaryExpression
-        this.type = this.boundOperandExpression.type
+        this.type = boundUnaryOperator.resultType
     }
 }
 
@@ -201,6 +212,6 @@ class BoundBinaryExpression extends BoundExpression
         this.boundRightExpression = boundRightExpression
 
         this.kind = BoundNodeKind.binaryExpression
-        this.type = boundLeftExpression.type        // left or right, arbitrary
+        this.type = boundBinaryOperator.resultType
     }
 }

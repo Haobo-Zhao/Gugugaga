@@ -44,6 +44,9 @@ const SyntaxKind = {
     badToken: 'badToken',
     endOfFile: 'endOfFile',
 
+    equals: 'equals',
+    unequals: 'unequals',
+
     logicalNegation: 'logicalNegation',
     logicalAnd: 'logicalAnd',
     logicalOr: 'logicalOr',
@@ -151,15 +154,9 @@ class Lexer {
             const syntaxKind = getKeywordSyntaxKind(keyword)
 
             return new SyntaxToken(syntaxKind, start, keyword, null)
-        } else if (char == '!') {
-            this.increasePosition()
-
-            const start = this.position
-            const syntaxKind = SyntaxKind.logicalNegation
-
-             return new SyntaxToken(syntaxKind, start, char, null)
         } else if (char == '&' || char == '|') {
             const nextChar = this.lookAhead(1)
+
             if (char == nextChar) {
                 this.increasePosition()
                 this.increasePosition()
@@ -170,6 +167,41 @@ class Lexer {
                     : SyntaxKind.logicalOr
 
                 return new SyntaxToken(syntaxKind, start, `${char}${nextChar}`, null)
+            }
+        } else if (char == '=') {
+            const nextChar = this.lookAhead(1)
+            if (char == nextChar) {
+                this.increasePosition()
+                this.increasePosition()
+
+                const start = this.position
+                const syntaxKind = SyntaxKind.equals
+
+                return new SyntaxToken(syntaxKind, start, `${char}${nextChar}`, null)
+            }
+        // handles
+        // 1) unequals
+        // 2) logicalNegation
+        } else if (char == '!') {
+            const nextChar = this.lookAhead(1)
+
+            // unequals
+            if (nextChar == '=') {
+                this.increasePosition()
+                this.increasePosition()
+
+                const start = this.position
+                const syntaxKind = SyntaxKind.unequals
+
+                return new SyntaxToken(syntaxKind, start, `${char}${nextChar}`, null)
+            } else {
+                // logicalNegation
+                this.increasePosition()
+
+                const start = this.position
+                const syntaxKind = SyntaxKind.logicalNegation
+
+                return new SyntaxToken(syntaxKind, start, char, null)
             }
         }
 

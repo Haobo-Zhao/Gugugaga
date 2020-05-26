@@ -63,6 +63,12 @@ class Evaluator
                         case BoundBinaryOperatorKind.logicalOr:
                             return leftValue || rightValue
 
+                        case BoundBinaryOperatorKind.equals:
+                            return leftValue == rightValue
+
+                        case BoundBinaryOperatorKind.unequals:
+                            return leftValue != rightValue
+
                         default:
                             throw new Error(`unexpected binary operator ${syntaxNode.boundBinaryOperatorKind}`)
                     }

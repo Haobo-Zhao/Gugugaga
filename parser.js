@@ -200,7 +200,7 @@ class Parser {
         }
     }
 
-    peek(offset) {
+    lookAhead(offset) {
         const index = this.position + offset
         const l = this.tokens.length
 
@@ -212,7 +212,7 @@ class Parser {
     }
 
     currentToken() {
-        return this.peek(0)
+        return this.lookAhead(0)
     }
 
     nextToken() {

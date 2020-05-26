@@ -36,6 +36,9 @@ const BINARY_OPERATOR_PRECEDENCES = {
     '+': 10,
     '-': 10,
 
+    '==': 5,
+    '!=': 5,
+
     '&&': 1,
     '||': 1,
 }
