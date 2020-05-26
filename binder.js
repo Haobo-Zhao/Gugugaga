@@ -122,10 +122,10 @@ class Binder
     bindUnaryExpression(expressionSyntax)
     {
         const boundOperandExpression = this.bindExpression(expressionSyntax.operandExpression)
-        const boundOperator = BoundUnaryOperator.bind(expressionSyntax.operatorToken.kind, boundOperandExpression.type)
+        const boundOperator = BoundUnaryOperator.bind(expressionSyntax.operatorToken.kind, boundOperandExpression.resultType)
 
         if (boundOperator == null) {
-            const message = `Unary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundOperandExpression.type}`
+            const message = `Unary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundOperandExpression.resultType}`
             this.diagnostics.push(message)
 
             return boundOperandExpression
@@ -139,10 +139,10 @@ class Binder
     {
         const boundLeftExpression = this.bindExpression(expressionSyntax.leftExpression)
         const boundRightExpression = this.bindExpression(expressionSyntax.rightExpression)
-        const boundOperator = BoundBinaryOperator.bind(expressionSyntax.operatorToken.kind, boundLeftExpression.type)
+        const boundOperator = BoundBinaryOperator.bind(expressionSyntax.operatorToken.kind, boundLeftExpression.resultType)
 
         if (boundOperator == null) {
-            const message = `Binary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundLeftExpression.type}`
+            const message = `Binary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundLeftExpression.resultType}`
             this.diagnostics.push(message)
 
             // returned value is arbitrary
@@ -179,7 +179,7 @@ class BoundLiteralExpression extends BoundExpression
         this.value = value
 
         this.kind = BoundNodeKind.literalExpression
-        this.type = typeof (value)
+        this.resultType = typeof (value)
     }
 
     getChildren() {
@@ -197,7 +197,7 @@ class BoundUnaryExpression extends BoundExpression
         this.boundOperandExpression = boundOperandExpression
 
         this.kind = BoundNodeKind.unaryExpression
-        this.type = boundUnaryOperator.resultType
+        this.resultType = boundUnaryOperator.resultType
     }
 }
 
@@ -212,6 +212,6 @@ class BoundBinaryExpression extends BoundExpression
         this.boundRightExpression = boundRightExpression
 
         this.kind = BoundNodeKind.binaryExpression
-        this.type = boundBinaryOperator.resultType
+        this.resultType = boundBinaryOperator.resultType
     }
 }
