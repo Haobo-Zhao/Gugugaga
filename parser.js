@@ -78,8 +78,8 @@ class ParenthesizedExpressionSyntax extends ExpressionSyntax {
 }
 
 class SyntaxTree {
-    constructor(diagnostics, rootExpression, endOfFileToken) {
-        this.diagnostics = diagnostics
+    constructor(diagnosticBag, rootExpression, endOfFileToken) {
+        this.diagnosticBag = diagnosticBag
         this.rootExpression = rootExpression
         this.endOfFileToken = endOfFileToken
     }
@@ -89,7 +89,7 @@ class Parser {
     constructor(text) {
         this.tokens = []
         this.position = 0
-        this.diagnostics = []
+        this.diagnosticBag = new DiagnosticBag()
         this.lexer = new Lexer(text)
 
         // get all tokens at once
@@ -106,14 +106,14 @@ class Parser {
             }
         } while (token.kind != SyntaxKind.endOfFile)
 
-        this.diagnostics = this.diagnostics.concat(this.lexer.diagnostics)
+        this.diagnosticBag.addBag(this.lexer.diagnosticBag)
     }
 
     parse() {
         const expressionSyntax = this.parseExpression()
         const endOfFileToken = this.matchToken(SyntaxKind.endOfFile)
 
-        return new SyntaxTree(this.diagnostics, expressionSyntax, endOfFileToken)
+        return new SyntaxTree(this.diagnosticBag, expressionSyntax, endOfFileToken)
     }
 
     parseExpression(parentPrecedence = 0) {
@@ -186,17 +186,17 @@ class Parser {
     }
 
     // Note: this method will increase `this.position` when matched
-    matchToken(kind) {
+    matchToken(expectedKind) {
         const currentToken = this.currentToken()
 
-        if (currentToken.kind == kind) {
+        if (currentToken.kind == expectedKind) {
             this.increasePosition()
             return currentToken
         } else {
-            const errorMessage = `ERROR: was expecting a <${kind}> token, but got a <${currentToken.kind}> token`
-            this.diagnostics.push(errorMessage)
+            const textSpan = currentToken.textSpan
+            this.diagnosticBag.reportUnexpectedToken(textSpan, currentToken.kind, expectedKind)
 
-            return new SyntaxToken(kind, currentToken.position, null, null)
+            return new SyntaxToken(expectedKind, currentToken.position, '\0', null)
         }
     }
 

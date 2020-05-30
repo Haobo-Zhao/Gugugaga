@@ -14,11 +14,12 @@ class Compilation {
         const binder = new Binder()
         const boundExpression = binder.bindExpression(this.syntaxTree.rootExpression)
 
-        const diagnostics = this.syntaxTree.diagnostics.concat(binder.diagnostics)
+        const diagnostics = this.syntaxTree.diagnosticBag.diagnostics.concat(binder.diagnosticBag.diagnostics)
 
         if (diagnostics.length == 0) {
             const e = new Evaluator(boundExpression)
             const value = e.evaluate()
+
             return new EvaluationResult([], value)
         } else {
             return new EvaluationResult(diagnostics, null)

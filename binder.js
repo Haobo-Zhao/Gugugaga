@@ -50,18 +50,19 @@ const BOUND_UNARY_OPERATORS = [
 
 class BoundBinaryOperator
 {
-    constructor(syntaxKind, boundBinaryOperatorKind, operandType, resultType)
+    constructor(syntaxKind, boundBinaryOperatorKind, leftOperandType, rightOperandType, resultType)
     {
         this.syntaxKind = syntaxKind
         this.boundBinaryOperatorKind = boundBinaryOperatorKind
-        this.operandType = operandType
+        this.leftOperandType = leftOperandType
+        this.rightOperandType = rightOperandType
         this.resultType = resultType
     }
 
-    static bind(syntaxKind, operandType)
+    static bind(syntaxKind, leftOperandType, rightOperandType)
     {
         for (const boundBinaryOperator of BOUND_BINARY_OPERATORS) {
-            if (boundBinaryOperator.syntaxKind == syntaxKind && boundBinaryOperator.operandType == operandType) {
+            if (boundBinaryOperator.syntaxKind == syntaxKind && boundBinaryOperator.leftOperandType == leftOperandType && boundBinaryOperator.rightOperandType == rightOperandType) {
                 return boundBinaryOperator
             }
         }
@@ -72,20 +73,20 @@ class BoundBinaryOperator
 
 const BOUND_BINARY_OPERATORS = [
     // of numbers
-    new BoundBinaryOperator(SyntaxKind.plus, BoundBinaryOperatorKind.plus, typeof (1), typeof (1)),
-    new BoundBinaryOperator(SyntaxKind.minus, BoundBinaryOperatorKind.nimus, typeof (1), typeof (1)),
-    new BoundBinaryOperator(SyntaxKind.multiplication, BoundBinaryOperatorKind.multiplication, typeof (1), typeof (1)),
-    new BoundBinaryOperator(SyntaxKind.division, BoundBinaryOperatorKind.division, typeof (1), typeof (1)),
+    new BoundBinaryOperator(SyntaxKind.plus, BoundBinaryOperatorKind.plus, typeof (1), typeof (1), typeof(1)),
+    new BoundBinaryOperator(SyntaxKind.minus, BoundBinaryOperatorKind.nimus, typeof (1), typeof (1), typeof(1)),
+    new BoundBinaryOperator(SyntaxKind.multiplication, BoundBinaryOperatorKind.multiplication, typeof (1), typeof (1), typeof(1)),
+    new BoundBinaryOperator(SyntaxKind.division, BoundBinaryOperatorKind.division, typeof (1), typeof (1), typeof(1)),
 
-    new BoundBinaryOperator(SyntaxKind.equals, BoundBinaryOperatorKind.equals, typeof (1), typeof (true)),
-    new BoundBinaryOperator(SyntaxKind.unequals, BoundBinaryOperatorKind.unequals, typeof (1), typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.equals, BoundBinaryOperatorKind.equals, typeof (1), typeof(1), typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.unequals, BoundBinaryOperatorKind.unequals, typeof (1), typeof(1), typeof (true)),
 
     // of booleans
-    new BoundBinaryOperator(SyntaxKind.logicalAnd, BoundBinaryOperatorKind.logicalAnd, typeof (true), typeof (true)),
-    new BoundBinaryOperator(SyntaxKind.logicalOr, BoundBinaryOperatorKind.logicalOr, typeof (true), typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.logicalAnd, BoundBinaryOperatorKind.logicalAnd, typeof (true), typeof (true), typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.logicalOr, BoundBinaryOperatorKind.logicalOr, typeof (true), typeof (true), typeof (true)),
 
-    new BoundBinaryOperator(SyntaxKind.equals, BoundBinaryOperatorKind.equals, typeof (true), typeof (true)),
-    new BoundBinaryOperator(SyntaxKind.unequals, BoundBinaryOperatorKind.unequals, typeof (true), typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.equals, BoundBinaryOperatorKind.equals, typeof (true), typeof (true), typeof (true)),
+    new BoundBinaryOperator(SyntaxKind.unequals, BoundBinaryOperatorKind.unequals, typeof (true), typeof (true), typeof (true)),
 ]
 
 
@@ -93,7 +94,7 @@ class Binder
 {
     constructor()
     {
-        this.diagnostics = []
+        this.diagnosticBag = new DiagnosticBag()
     }
 
     bindExpression(expressionSyntax)
@@ -128,11 +129,14 @@ class Binder
     bindUnaryExpression(expressionSyntax)
     {
         const boundOperandExpression = this.bindExpression(expressionSyntax.operandExpression)
-        const boundOperator = BoundUnaryOperator.bind(expressionSyntax.operatorToken.kind, boundOperandExpression.resultType)
+        const boundOperandExpressionResultType = boundOperandExpression.resultType
+        const boundOperator = BoundUnaryOperator.bind(expressionSyntax.operatorToken.kind, boundOperandExpressionResultType)
 
         if (boundOperator == null) {
-            const message = `Unary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundOperandExpression.resultType}`
-            this.diagnostics.push(message)
+            const textSpan = expressionSyntax.operatorToken.textSpan
+            const text = expressionSyntax.operatorToken.text
+
+            this.diagnosticBag.reportUndefinedUnaryOperator(textSpan, text, boundOperandExpressionResultType)
 
             return boundOperandExpression
         }
@@ -144,14 +148,19 @@ class Binder
     bindBinaryExpression(expressionSyntax)
     {
         const boundLeftExpression = this.bindExpression(expressionSyntax.leftExpression)
+        const boundLeftExpressionResultType = boundLeftExpression.resultType
+
         const boundRightExpression = this.bindExpression(expressionSyntax.rightExpression)
-        const boundOperator = BoundBinaryOperator.bind(expressionSyntax.operatorToken.kind, boundLeftExpression.resultType)
+        const boundRightExpressionResultType = boundRightExpression.resultType
+
+        const boundOperator = BoundBinaryOperator.bind(expressionSyntax.operatorToken.kind, boundLeftExpressionResultType, boundRightExpressionResultType)
 
         if (boundOperator == null) {
-            const message = `Binary operator ${expressionSyntax.operatorToken.text} is not defined for type ${boundLeftExpression.resultType}`
-            this.diagnostics.push(message)
+            const textSpan = expressionSyntax.operatorToken.textSpan
+            const text = expressionSyntax.operatorToken.text
 
-            // returned value is arbitrary
+            this.diagnosticBag.reportUndefinedBinaryOperator(textSpan, text, boundLeftExpressionResultType, boundRightExpressionResultType)
+
             return boundLeftExpression
         }
 
@@ -186,10 +195,6 @@ class BoundLiteralExpression extends BoundExpression
 
         this.kind = BoundNodeKind.literalExpression
         this.resultType = typeof (value)
-    }
-
-    getChildren() {
-        return []
     }
 }
 

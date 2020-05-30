@@ -1,12 +1,12 @@
 function main() {
-    log('\n******** Start parsing ********\n\n')
+    log(`\n******** Start parsing ********\n\n`)
 
-    // const line = '1 1 * @#'
-    // const line = '1 + 2 + 3'
-    // const line = '-(1 + 1) + 2 * 3'
-    // const line = '(1 + 2) * 3'
-    // const line = '-1 + 2 * 3'
-    const line = '(1 == 1) && true != false'
+    // const line = `1 1 * @#`
+    // const line = `1 + 2 + 3`
+    // const line = `-(1 + 1) + 2 * 3`
+    // const line = `(1 + 2) * 3`
+    const line = `1 * true`
+    // const line = `(1 == 1) && true != false`
 
     const parser = new Parser(line)
     const syntaxTree = parser.parse()
@@ -22,12 +22,21 @@ function main() {
     prettyLog(rootExpression)
 
     if (diagnostics.length == 0) {
-        log('\n******** Start evaluating ********\n\n')
+        log(`\n******** Start evaluating ********\n\n`)
         log(`> ${value}`)
     } else {
-        diagnostics.forEach(errorMessage => {
-            console.error(errorMessage)
+        diagnostics.forEach(diagnostic => {
+            console.log(`%c${diagnostic.message}`, LOG_COLOR.error)
+
+            const textSpan = diagnostic.textSpan
+            const prefix = line.substring(0, textSpan.start)
+            const error = line.substr(textSpan.start, textSpan.length)
+            const suffix = line.substr(textSpan.end)
+
+            log(`    ${prefix}%c${error}%c${suffix}`, LOG_COLOR.error, LOG_COLOR.default)
         });
+
+        log(``)
     }
 }
 

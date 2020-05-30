@@ -70,7 +70,7 @@ class Lexer {
     constructor(text) {
         this.text = text
         this.position = 0
-        this.diagnostics = []
+        this.diagnosticBag = new DiagnosticBag()
     }
 
     currentChar() {
@@ -116,7 +116,8 @@ class Lexer {
             const value = Number(text)
 
             if (isNaN(value)) {
-                this.diagnostics.push(`ERROR: '${text}' is not a valid literal.`)
+                const textSpan = new TextSpan(start, text.length)
+                this.diagnosticBag.reportInvalidNumber(textSpan, typeof(1))
             }
 
             return new SyntaxToken(SyntaxKind.number, start, text, value)
@@ -133,21 +134,21 @@ class Lexer {
             this.increasePosition()
 
             if (char == '+') {
-                return new SyntaxToken(SyntaxKind.plus, this.position, char, null)
+                return new SyntaxToken(SyntaxKind.plus, start, char, null)
             } else if (char == '-') {
-                return new SyntaxToken(SyntaxKind.minus, this.position, char, null)
+                return new SyntaxToken(SyntaxKind.minus, start, char, null)
             } else if (char == '*') {
-                return new SyntaxToken(SyntaxKind.multiplication, this.position, char, null)
+                return new SyntaxToken(SyntaxKind.multiplication, start, char, null)
             } else if (char == '/') {
-                return new SyntaxToken(SyntaxKind.division, this.position, char, null)
+                return new SyntaxToken(SyntaxKind.division, start, char, null)
             }
         } else if (PARENTHESIS.includes(char)) {
             this.increasePosition()
 
             if (char == '(') {
-                return new SyntaxToken(SyntaxKind.openParenthesis, this.position, char, null)
+                return new SyntaxToken(SyntaxKind.openParenthesis, start, char, null)
             } else if (char == ')') {
-                return new SyntaxToken(SyntaxKind.closingParenthesis, this.position, char, null)
+                return new SyntaxToken(SyntaxKind.closingParenthesis, start, char, null)
             }
         } else if (char == 't' || char == 'f') {
 
@@ -207,8 +208,7 @@ class Lexer {
             }
         }
 
-        const errorMessage = `ERROR: bad character: ${this.currentChar()}`
-        this.diagnostics.push(errorMessage)
+        this.diagnosticBag.reportBadCharacter(start, char)
 
         const badToekn = new SyntaxToken(
             SyntaxKind.badToken,

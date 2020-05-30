@@ -1,5 +1,10 @@
 const log = console.log.bind(console)
 
+const LOG_COLOR = {
+    default: 'color: #000000',
+    error: 'color: RED',
+}
+
 const getKeywordSyntaxKind = (text) =>
 {
     switch (text) {
