@@ -6,7 +6,7 @@ function main() {
     // const line = '-(1 + 1) + 2 * 3'
     // const line = '(1 + 2) * 3'
     // const line = '-1 + 2 * 3'
-    const line = '1 == 1 && true != false'
+    const line = '(1 == 1) && true != false'
 
     const parser = new Parser(line)
     const syntaxTree = parser.parse()

@@ -101,10 +101,16 @@ class Binder
         switch (expressionSyntax.kind) {
             case SyntaxKind.literalExpression:
                 return this.bindLiteralExpression(expressionSyntax)
+
             case SyntaxKind.unaryExpression:
                 return this.bindUnaryExpression(expressionSyntax)
+
             case SyntaxKind.binaryExpression:
                 return this.bindBinaryExpression(expressionSyntax)
+
+            case SyntaxKind.parenthesizedExpression:
+                return this.bindExpression(expressionSyntax.expression)
+
             default:
                 throw new Error(`unexpected expression syntax ${expressionSyntax.kind}`)
         }
