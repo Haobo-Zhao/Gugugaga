@@ -95,19 +95,18 @@ class Lexer {
     }
 
     nextToken() {
-        // literal
-        // + - * / ( )
-        // whlitespace
+        // 1) literals
+        // 2) + - * / ( )
+        // 3) whlitespace
 
         if (this.position >= this.text.length) {
             return new SyntaxToken(SyntaxKind.endOfFile, this.position, '\0', null)
         }
 
         const char = this.currentChar()
-        // log(`current char: (${char})`)
+        const start = this.position
 
         if (DIGITS.includes(char)) {
-            const start = this.position
             while (DIGITS.includes(this.currentChar())) {
                 this.increasePosition()
             }
@@ -122,7 +121,6 @@ class Lexer {
 
             return new SyntaxToken(SyntaxKind.number, start, text, value)
         } else if (WHITESPACES.includes(char)) {
-            const start = this.position
             while (WHITESPACES.includes(this.currentChar())) {
                 this.increasePosition()
             }
@@ -152,7 +150,6 @@ class Lexer {
                 return new SyntaxToken(SyntaxKind.closingParenthesis, this.position, char, null)
             }
         } else if (char == 't' || char == 'f') {
-            const start = this.position
 
             while ('true'.includes(this.currentChar()) || 'false'.includes(this.currentChar())) {
                 this.increasePosition()
@@ -170,7 +167,6 @@ class Lexer {
                 this.increasePosition()
                 this.increasePosition()
 
-                const start = this.position
                 const syntaxKind = char == '&'
                     ? SyntaxKind.logicalAnd
                     : SyntaxKind.logicalOr
@@ -183,7 +179,6 @@ class Lexer {
                 this.increasePosition()
                 this.increasePosition()
 
-                const start = this.position
                 const syntaxKind = SyntaxKind.equals
 
                 return new SyntaxToken(syntaxKind, start, `${char}${nextChar}`, null)
@@ -199,7 +194,6 @@ class Lexer {
                 this.increasePosition()
                 this.increasePosition()
 
-                const start = this.position
                 const syntaxKind = SyntaxKind.unequals
 
                 return new SyntaxToken(syntaxKind, start, `${char}${nextChar}`, null)
@@ -207,7 +201,6 @@ class Lexer {
                 // logicalNegation
                 this.increasePosition()
 
-                const start = this.position
                 const syntaxKind = SyntaxKind.logicalNegation
 
                 return new SyntaxToken(syntaxKind, start, char, null)
