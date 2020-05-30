@@ -11,18 +11,17 @@ function main() {
     const parser = new Parser(line)
     const syntaxTree = parser.parse()
     const rootExpression = syntaxTree.rootExpression
-    const binder = new Binder()
-    const boundExpression = binder.bindExpression(rootExpression)
 
-    const diagnostics = parser.diagnostics.concat(binder.diagnostics)
+    const compilation = new Compilation(syntaxTree)
+    const evaluationResult = compilation.evaluate()
+
+    const diagnostics = evaluationResult.diagnostics
+    const value = evaluationResult.value
 
     log(`Parsing '${line}':\n\n`)
     prettyLog(rootExpression)
 
     if (diagnostics.length == 0) {
-        const evaluator = new Evaluator(boundExpression)
-        const value = evaluator.evaluate()
-
         log('\n******** Start evaluating ********\n\n')
         log(`> ${value}`)
     } else {
