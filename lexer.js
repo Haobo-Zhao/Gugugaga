@@ -8,6 +8,14 @@ class SyntaxNode {
     }
 }
 
+class TextSpan {
+    constructor(start, length) {
+        this.start = start
+        this.length = length
+        this.end = start + length   // exclusive
+    }
+}
+
 class SyntaxToken extends SyntaxNode {
     constructor(kind, position, text, value) {
         super()
@@ -16,6 +24,7 @@ class SyntaxToken extends SyntaxNode {
         this.position = position
         this.text = text
         this.value = value
+        this.textSpan = new TextSpan(position, text.length)
     }
 
     getChildren() {
