@@ -110,7 +110,7 @@ class Binder
                 return this.bindBinaryExpression(expressionSyntax)
 
             case SyntaxKind.parenthesizedExpression:
-                return this.bindExpression(expressionSyntax.expression)
+                return this.bindParenthesizedExpression(expressionSyntax)
 
             default:
                 throw new Error(`unexpected expression syntax ${expressionSyntax.kind}`)
@@ -167,6 +167,9 @@ class Binder
         return new BoundBinaryExpression(boundLeftExpression, boundOperator, boundRightExpression)
     }
 
+    bindParenthesizedExpression(expressionSyntax) {
+        return this.bindExpression(expressionSyntax.expression)
+    }
 }
 
 class BoundNode
