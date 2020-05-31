@@ -15,7 +15,7 @@ const getKeywordSyntaxKind = (text) =>
             return SyntaxKind.falseKeyword
 
         default:
-            return SyntaxKind.IdentifierToken
+            return SyntaxKind.identifierToken
     }
 }
 
@@ -58,6 +58,11 @@ const getBinaryOperatorPrecedence = (binaryOperator) => {
 
 const prettyLog = (node, indent = '', marker = '', isLastChild = true, isRoot = true) => {
     let message = `${indent}${marker}${node.kind}`
+
+    if (node && node.kind == SyntaxKind.identifierToken) {
+        message += ` '${node.text}'`
+    }
+
     if (node && node.value && typeof(node.value) != 'boolean') {
         message += ` ${node.value}`
     }
@@ -82,7 +87,10 @@ const prettyLog = (node, indent = '', marker = '', isLastChild = true, isRoot = 
     });
 }
 
+const EOF = '\0'
 const DIGITS = '0123456789'
 const WHITESPACES = ' \s\t\n\r\v'
 const OPERATORS = '+-*/'
 const PARENTHESIS = '()'
+const LOWER_CASES = 'abcdefghijklmnopqrstuvwxyz'
+const UPPER_CASES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'

@@ -92,8 +92,9 @@ const BOUND_BINARY_OPERATORS = [
 
 class Binder
 {
-    constructor()
+    constructor(variables)
     {
+        this.variables = variables
         this.diagnosticBag = new DiagnosticBag()
     }
 
@@ -102,6 +103,12 @@ class Binder
         switch (expressionSyntax.kind) {
             case SyntaxKind.literalExpression:
                 return this.bindLiteralExpression(expressionSyntax)
+
+            case SyntaxKind.nameExpression:
+                return this.bindNameExpression(expressionSyntax)
+
+            case SyntaxKind.assignmentExpression:
+                return this.bindAssignmentExpression(expressionSyntax)
 
             case SyntaxKind.unaryExpression:
                 return this.bindUnaryExpression(expressionSyntax)
@@ -124,6 +131,41 @@ class Binder
         let value = expressionSyntax.literalToken.value
 
         return new BoundLiteralExpression(value)
+    }
+
+    bindNameExpression(expressionSyntax) {
+        const name = expressionSyntax.identifierToken.text
+
+        if (!(name in this.variables)) {
+            const textSpan = expressionSyntax.identifierToken.textSpan
+            this.diagnosticBag.reportUndefinedName(textSpan, name)
+
+            return new BoundLiteralExpression(0)
+        } else {
+            const value = this.variables[name]
+            const type = typeof(value)
+
+            return new BoundNameExpression(name, type)
+        }
+    }
+
+    bindAssignmentExpression(expressionSyntax) {
+        const name = expressionSyntax.identifierToken.text
+        const boundExpression = this.bindExpression(expressionSyntax.expressionSyntax)
+
+        const defaultValue = boundExpression.resultType == typeof(1)
+            ? 0
+            : boundExpression.resultType == typeof(true)
+                ? false
+                : null
+
+        if (defaultValue == null) {
+            throw new Error(`Unsupported variable type: ${boundExpression.Type}`)
+        }
+
+        this.variables[name] = defaultValue
+
+        return new BoundAssignmentExpression(name, boundExpression)
     }
 
     bindUnaryExpression(expressionSyntax)
@@ -179,6 +221,8 @@ class BoundNode
 
 const BoundNodeKind = {
     literalExpression: 'boundLiteralExpression',
+    nameExpression: 'boundNameExpression',
+    assignmentExpression: 'boundAssignmentExpression',
     unaryExpression: 'boundUunaryExpression',
     binaryExpression: 'boundBinaryExpression',
 }
@@ -198,6 +242,29 @@ class BoundLiteralExpression extends BoundExpression
 
         this.kind = BoundNodeKind.literalExpression
         this.resultType = typeof (value)
+    }
+}
+
+class BoundNameExpression {
+    constructor(name, resultType) {
+        this.name = name;
+
+        this.kind = BoundNodeKind.nameExpression
+        this.resultType = resultType;
+    }
+}
+
+class BoundAssignmentExpression extends BoundExpression
+{
+    constructor(name, boundExpression)
+    {
+        super()
+
+        this.name = name
+        this.boundExpression = boundExpression
+
+        this.kind = BoundNodeKind.assignmentExpression
+        this.resultType = boundExpression.resultType
     }
 }
 

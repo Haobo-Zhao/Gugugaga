@@ -10,14 +10,14 @@ class Compilation {
         this.syntaxTree = syntaxTree
     }
 
-    evaluate() {
-        const binder = new Binder()
+    evaluate(variables) {
+        const binder = new Binder(variables)
         const boundExpression = binder.bindExpression(this.syntaxTree.rootExpression)
 
         const diagnostics = this.syntaxTree.diagnosticBag.diagnostics.concat(binder.diagnosticBag.diagnostics)
 
         if (diagnostics.length == 0) {
-            const e = new Evaluator(boundExpression)
+            const e = new Evaluator(boundExpression, variables)
             const value = e.evaluate()
 
             return new EvaluationResult([], value)

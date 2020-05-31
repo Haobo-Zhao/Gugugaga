@@ -40,7 +40,13 @@ class DiagnosticBag
 
     reportUnexpectedToken(textSpan, actualKind, expectedKind)
     {
-        const message = `was expecting a <${expectedKind}>, but get a token of <${actualKind}>`
+        const message = `unmatched token: was expecting a <${expectedKind}>, but get a <${actualKind}>`
+        this.report(textSpan, message);
+    }
+
+    reportUndefinedName(textSpan, name)
+    {
+        const message = `variable '${name}' doesn't exist`
         this.report(textSpan, message);
     }
 

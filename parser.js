@@ -30,6 +30,36 @@ class LiteralExpressionSyntax extends ExpressionSyntax {
     }
 }
 
+class NameExpressionSyntax extends ExpressionSyntax {
+    constructor(identifierToken) {
+        super()
+
+        this.identifierToken = identifierToken
+
+        this.kind = SyntaxKind.nameExpression
+    }
+
+    getChildren() {
+        return [this.identifierToken]
+    }
+}
+
+class AssignmentExpressionSyntax extends ExpressionSyntax {
+    constructor(identifierToken, equalsToken, expressionSyntax) {
+        super()
+
+        this.identifierToken = identifierToken
+        this.equalsToken = equalsToken
+        this.expressionSyntax = expressionSyntax
+
+        this.kind = SyntaxKind.assignmentExpression
+    }
+
+    getChildren() {
+        return [this.identifierToken, this.equalsToken, this.expressionSyntax]
+    }
+}
+
 class UnaryExpressionSyntax extends ExpressionSyntax {
     constructor(operatorToken, operandExpression) {
         super()
@@ -116,7 +146,29 @@ class Parser {
         return new SyntaxTree(this.diagnosticBag, expressionSyntax, endOfFileToken)
     }
 
-    parseExpression(parentPrecedence = 0) {
+    parseExpression() {
+        return this.parseAssignmentExpression()
+    }
+
+    parseAssignmentExpression() {
+        const currentToken = this.currentToken()
+        const nextToken = this.lookAhead(1)
+
+        if (currentToken.kind == SyntaxKind.identifierToken && nextToken.kind == SyntaxKind.equals) {
+            this.increasePosition()
+            this.increasePosition()
+
+            const identifierToken = currentToken
+            const equalsToken = nextToken
+            const rightExpression = this.parseAssignmentExpression()
+
+            return new AssignmentExpressionSyntax(identifierToken, equalsToken, rightExpression)
+        } else {
+            return this.parseBinaryExpression()
+        }
+    }
+
+    parseBinaryExpression(parentPrecedence = 0) {
         let leftExpression
         let currentToken = this.currentToken()
         const unaryPrecedence = getUnaryOperatorPrecedence(currentToken.text)
@@ -124,7 +176,7 @@ class Parser {
         // handles unary expressions
         if (unaryPrecedence != 0 && unaryPrecedence >= parentPrecedence) {
             this.increasePosition()
-            const operandExpression = this.parseExpression(unaryPrecedence)
+            const operandExpression = this.parseBinaryExpression(unaryPrecedence)
             leftExpression = new UnaryExpressionSyntax(currentToken, operandExpression)
         } else {
             leftExpression = this.parsePrimaryExpression()
@@ -139,7 +191,7 @@ class Parser {
             }
 
             this.increasePosition()
-            const rightExpression = this.parseExpression(precedence)
+            const rightExpression = this.parseBinaryExpression(precedence)
             leftExpression = new BinaryExpressionSyntax(leftExpression, operatorToken, rightExpression)
         }
 
@@ -152,22 +204,35 @@ class Parser {
     parsePrimaryExpression() {
         const token = this.currentToken()
 
-        if (token.kind == SyntaxKind.openParenthesis) {
-            return this.parseParenthesizedExpression()
+        switch (token.kind) {
+            case SyntaxKind.openParenthesis:
+                return this.parseParenthesizedExpression()
+
+            case SyntaxKind.trueKeyword:
+            case SyntaxKind.falseKeyword:
+                {
+                    this.increasePosition()
+
+                    const value = token.kind == SyntaxKind.trueKeyword
+                    token.value = value
+
+                    return new LiteralExpressionSyntax(token)
+                }
+
+            case SyntaxKind.identifierToken:
+                {
+                    this.increasePosition()
+
+                    return new NameExpressionSyntax(token)
+                }
+
+            default:
+                {
+                    const numberToken = this.matchToken(SyntaxKind.number)
+
+                    return new LiteralExpressionSyntax(numberToken)
+                }
         }
-
-        // handles booleans
-        if (token.kind == SyntaxKind.trueKeyword || token.kind == SyntaxKind.falseKeyword) {
-            const value = token.kind == SyntaxKind.trueKeyword
-            token.value = value
-            this.increasePosition()
-
-            return new LiteralExpressionSyntax(token)
-        }
-
-        const numberToken = this.matchToken(SyntaxKind.number)
-
-        return new LiteralExpressionSyntax(numberToken)
     }
 
     parseParenthesizedExpression() {
@@ -191,6 +256,7 @@ class Parser {
 
         if (currentToken.kind == expectedKind) {
             this.increasePosition()
+
             return currentToken
         } else {
             const textSpan = currentToken.textSpan

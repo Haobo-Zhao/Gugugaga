@@ -1,8 +1,9 @@
 class Evaluator
 {
-    constructor(rootExpression)
+    constructor(rootExpression, variables)
     {
         this.rootExpression = rootExpression
+        this.variables = variables
     }
 
     evaluate()
@@ -19,6 +20,17 @@ class Evaluator
         switch (syntaxNode.kind) {
             case BoundNodeKind.literalExpression:
                 return syntaxNode.value
+
+            case BoundNodeKind.nameExpression:
+                return this.variables[syntaxNode.name]
+
+            case BoundNodeKind.assignmentExpression:
+                {
+                    const value = this.evaluateExpression(syntaxNode.boundExpression)
+                    this.variables[syntaxNode.name] = value
+
+                    return value
+                }
 
             case BoundNodeKind.unaryExpression:
                 {

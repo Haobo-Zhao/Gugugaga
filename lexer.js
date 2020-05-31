@@ -48,7 +48,8 @@ const SyntaxKind = {
     openParenthesis: 'openParenthesis',
     closingParenthesis: 'closingParenthesis',
 
-    IdentifierToken: 'IdentifierToken',
+    identifierToken: 'identifierToken',
+    equalsToken: 'equalsToken',
 
     badToken: 'badToken',
     endOfFile: 'endOfFile',
@@ -60,8 +61,10 @@ const SyntaxKind = {
     logicalAnd: 'logicalAnd',
     logicalOr: 'logicalOr',
 
-    unaryExpression: 'unaryExpression',
     literalExpression: 'literalExpression',
+    nameExpression: 'nameExpression',
+    assignmentExpression: 'assignmentExpression',
+    unaryExpression: 'unaryExpression',
     binaryExpression: 'binaryExpression',
     parenthesizedExpression: 'parenthesizedExpression',
 }
@@ -176,6 +179,7 @@ class Lexer {
             }
         } else if (char == '=') {
             const nextChar = this.lookAhead(1)
+            // == equals
             if (char == nextChar) {
                 this.increasePosition()
                 this.increasePosition()
@@ -183,6 +187,10 @@ class Lexer {
                 const syntaxKind = SyntaxKind.equals
 
                 return new SyntaxToken(syntaxKind, start, `${char}${nextChar}`, null)
+            } else {    // = assignment
+                this.increasePosition()
+
+                return new SyntaxToken(SyntaxKind.equals, start, `=`, null)
             }
         // handles
         // 1) unequals
@@ -206,6 +214,15 @@ class Lexer {
 
                 return new SyntaxToken(syntaxKind, start, char, null)
             }
+        } else if (LOWER_CASES.includes(char) || UPPER_CASES.includes(char)) {
+            while (!WHITESPACES.includes(this.currentChar()) && this.currentChar() != EOF) {
+                this.increasePosition()
+            }
+
+            const end = this.position
+            const text = this.text.slice(start, end)
+
+            return new SyntaxToken(SyntaxKind.identifierToken, start, text, null)
         }
 
         this.diagnosticBag.reportBadCharacter(start, char)
